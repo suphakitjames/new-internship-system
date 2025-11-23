@@ -1,0 +1,11 @@
+vendor/
+.env
+.DS_Store
+*.log
+/node_modules
+/public/storage
+/storage/*.key
+.idea/
+.vscode/
+*.swp
+*.swo
