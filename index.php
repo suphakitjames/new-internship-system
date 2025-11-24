@@ -3,6 +3,16 @@
 session_start();
 require_once 'config/database.php';
 
+// Autoloader
+spl_autoload_register(function ($class) {
+    $base_dir = __DIR__ . '/src/';
+    $file = $base_dir . str_replace('\\', '/', $class) . '.php';
+    if (file_exists($file)) {
+        require $file;
+    }
+});
+
+
 // CSRF Protection: Generate Token
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));

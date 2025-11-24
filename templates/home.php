@@ -4,6 +4,7 @@
     <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">ค้นหาสถานที่ฝึกงานที่ใช่ ยื่นเรื่องง่าย ติดตามผลได้ทันที เชื่อมโยงนิสิตและสถานประกอบการเข้าด้วยกัน</p>
     <div class="flex justify-center gap-4">
         <a href="index.php?page=internships" class="bg-blue-600 text-white px-8 py-3 rounded-xl text-lg font-semibold hover:bg-blue-700 transition shadow-lg shadow-blue-500/30">ค้นหาสถานที่ฝึกงาน</a>
+        <a href="index.php?page=student&action=internship_steps" class="bg-white text-blue-600 border border-blue-200 px-8 py-3 rounded-xl text-lg font-semibold hover:bg-blue-50 transition">ขั้นตอนการยื่นเรื่อง</a>
         <a href="index.php?page=auth&action=register" class="bg-white text-blue-600 border border-blue-200 px-8 py-3 rounded-xl text-lg font-semibold hover:bg-blue-50 transition">ลงทะเบียนนิสิต</a>
     </div>
 </div>
