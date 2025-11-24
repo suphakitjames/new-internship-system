@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+    environment:
+      - DB_HOST=db
+      - DB_NAME=internship_system
+      - DB_USER=root
+      - DB_PASS=rootpassword
+    depends_on:
+      - db
+    networks:
+      - internship-network
+
+  db:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_DATABASE=internship_system
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database.sql:/docker-entrypoint-initdb.d/01_init.sql
+      - ./docker/02_updates.sql:/docker-entrypoint-initdb.d/02_updates.sql
+    networks:
+      - internship-network
+
+networks:
+  internship-network:
+    driver: bridge
+
+volumes:
+  db_data:
