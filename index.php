@@ -3,6 +3,11 @@
 session_start();
 require_once 'config/database.php';
 
+// Debug: Enable errors (can be removed in production)
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 // Autoloader
 spl_autoload_register(function ($class) {
     $base_dir = __DIR__ . '/src/';
@@ -11,7 +16,6 @@ spl_autoload_register(function ($class) {
         require $file;
     }
 });
-
 
 // CSRF Protection: Generate Token
 if (empty($_SESSION['csrf_token'])) {
@@ -32,6 +36,15 @@ if ($page === 'admin' && ($action === 'save_status_reply' || $action === 'proces
         echo json_encode(['success' => false, 'message' => 'File not found']);
     }
     exit;
+}
+
+// Check for Process Actions (Form Submissions that redirect) or Logout
+if (str_starts_with($action, 'process_') || $action === 'logout' || $action === 'add_company' || $action === 'generate_company_user') {
+    $file = "src/" . ucfirst($page) . "/$action.php";
+    if (file_exists($file)) {
+        include $file;
+        exit;
+    }
 }
 
 // Basic Auth Check (Placeholder)

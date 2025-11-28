@@ -38,10 +38,10 @@ $students_with_messages = $stmt->fetchAll();
 
 // Handle Student Selection
 $selected_student_id = $_GET['student_id'] ?? null;
-$selected_message = null;
+$messages = []; // Initialize $messages as an empty array
 
 if ($selected_student_id) {
-    // Fetch the latest message from this student
+    // Fetch all messages from this student
     $stmt = $pdo->prepare("
         SELECT am.*, u.full_name as student_name
         FROM advisor_messages am
@@ -49,15 +49,24 @@ if ($selected_student_id) {
         JOIN users u ON s.user_id = u.id
         WHERE am.advisor_id = ? AND s.student_id = ?
         ORDER BY am.created_at DESC
-        LIMIT 1
     ");
     $stmt->execute([$user_id, $selected_student_id]);
-    $selected_message = $stmt->fetch();
+    $messages = $stmt->fetchAll();
 
-    // Mark as read if found
-    if ($selected_message && !$selected_message['is_read']) {
-        $stmtUpdate = $pdo->prepare("UPDATE advisor_messages SET is_read = 1 WHERE id = ?");
-        $stmtUpdate->execute([$selected_message['id']]);
+    // Mark unread messages as read
+    if ($messages) {
+        $unread_ids = [];
+        foreach ($messages as $msg) {
+            if (!$msg['is_read']) {
+                $unread_ids[] = $msg['id'];
+            }
+        }
+
+        if (!empty($unread_ids)) {
+            $placeholders = str_repeat('?,', count($unread_ids) - 1) . '?';
+            $stmtUpdate = $pdo->prepare("UPDATE advisor_messages SET is_read = 1 WHERE id IN ($placeholders)");
+            $stmtUpdate->execute($unread_ids);
+        }
     }
 }
 ?>
@@ -92,7 +101,7 @@ if ($selected_student_id) {
         </div>
     </div>
 
-    <!-- Message Section (Design matching user request) -->
+    <!-- Message Section -->
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
         <h2 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
             <svg class="w-6 h-6 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,35 +126,56 @@ if ($selected_student_id) {
             </div>
         </form>
 
-        <?php if ($selected_message): ?>
-            <div class="border border-green-400 rounded-lg overflow-hidden">
-                <div class="bg-green-500 text-white px-4 py-2 font-bold text-center">
-                    รายละเอียดการเล่าสู่กันฟังที่นิสิตเขียนถึงอาจารย์ที่ปรึกษา
+        <?php if ($selected_student_id && !empty($messages)): ?>
+            <div class="space-y-6">
+                <div class="bg-blue-50 text-blue-800 px-4 py-3 rounded-lg flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span class="font-medium">ประวัติการเล่าสู่กันฟังจาก: <?= htmlspecialchars($messages[0]['student_name']) ?></span>
                 </div>
-                <div class="divide-y divide-green-200">
-                    <div class="flex">
-                        <div class="w-1/3 bg-white p-4 font-bold text-slate-700 border-r border-green-200">
-                            รายชื่อนิสิต : <?= htmlspecialchars($selected_message['student_name']) ?>
+
+                <div class="space-y-4">
+                    <?php foreach ($messages as $msg): ?>
+                        <div class="border border-slate-200 rounded-xl p-6 hover:shadow-md transition-shadow bg-white">
+                            <div class="flex items-center justify-between mb-4 pb-4 border-b border-slate-100">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm text-slate-500">ส่งเมื่อ</div>
+                                        <div class="font-medium text-slate-900">
+                                            <?= date('d/m/Y H:i น.', strtotime($msg['created_at'])) ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-slate-700 leading-relaxed whitespace-pre-wrap pl-13 border-l-4 border-purple-100 pl-4 ml-2">
+                                <?= htmlspecialchars($msg['message']) ?>
+                            </div>
                         </div>
-                        <div class="w-2/3 bg-white p-4"></div>
-                    </div>
-                    <div class="flex">
-                        <div class="w-1/3 bg-white p-4 font-bold text-slate-700 border-r border-green-200">
-                            รายละเอียดที่นิสิตเขียนถึง :
-                        </div>
-                        <div class="w-2/3 bg-white p-4 text-slate-800">
-                            <?= nl2br(htmlspecialchars($selected_message['message'])) ?>
-                        </div>
-                    </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
         <?php elseif ($selected_student_id): ?>
-            <div class="text-center py-8 text-slate-500">
-                ไม่พบข้อความจากนิสิตคนนี้
+            <div class="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                <svg class="w-12 h-12 text-slate-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                </svg>
+                <p class="text-slate-500">ไม่พบข้อความจากนิสิตคนนี้</p>
             </div>
         <?php else: ?>
-            <div class="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-300">
-                <p class="text-slate-500">กรุณาเลือกรายชื่อนิสิตเพื่อดูข้อความ</p>
+            <div class="text-center py-16 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mx-auto mb-4">
+                    <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-slate-900 mb-1">กรุณาเลือกรายชื่อนิสิต</h3>
+                <p class="text-slate-500">เลือกนิสิตจากเมนูด้านบนเพื่อดูประวัติการเล่าสู่กันฟัง</p>
             </div>
         <?php endif; ?>
     </div>

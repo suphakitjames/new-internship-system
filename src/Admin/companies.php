@@ -6,6 +6,10 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
     exit;
 }
 
+// Fetch Provinces for Dropdown
+$stmt = $pdo->query("SELECT * FROM provinces ORDER BY name_th ASC");
+$provinces = $stmt->fetchAll();
+
 // Fetch all companies (pending and approved) with linked user info
 $stmt = $pdo->query("
     SELECT 
@@ -172,7 +176,12 @@ $companies = $stmt->fetchAll();
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">จังหวัด *</label>
-                        <input type="text" name="province" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <select name="province" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">เลือกจังหวัด</option>
+                            <?php foreach ($provinces as $p): ?>
+                                <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['name_th']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">เบอร์โทร</label>

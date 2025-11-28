@@ -30,6 +30,19 @@ services:
     networks:
       - internship-network
 
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "8081:80"
+    depends_on:
+      - db
+    networks:
+      - internship-network
+
 networks:
   internship-network:
     driver: bridge
