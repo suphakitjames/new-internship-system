@@ -1,3 +1,6 @@
+<?php
+// templates/admin_layout.php
+?>
 <!DOCTYPE html>
 <html lang="th">
 
@@ -19,8 +22,18 @@
         }
 
         @media (max-width: 768px) {
-            .sidebar.closed {
+            .sidebar {
                 transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+        }
+
+        @media (min-width: 769px) {
+            .sidebar {
+                transform: translateX(0) !important;
             }
         }
 
@@ -189,16 +202,33 @@
 
         <!-- Main Content Area -->
         <div class="flex-1 flex flex-col overflow-hidden">
-            <!-- Top Bar -->
-            <header class="bg-white shadow-sm border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+            <!-- Top Bar with Hamburger Button -->
+            <header class="bg-white shadow-sm border-b border-slate-200 px-4 md:px-6 py-4 flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <span class="hidden md:inline">กลับหน้าหลัก</span>
-                    </a>
+                    <!-- Hamburger Menu Button (Mobile/Tablet only) -->
+                    <button id="sidebarToggle" class="md:hidden text-slate-600 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg p-2 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+
+                    <!-- Page Title -->
+                    <div>
+                        <h1 class="text-lg md:text-xl font-semibold text-slate-800">ระบบบริหารจัดการการฝึกประสบการณ์วิชาชีพ</h1>
+                    </div>
                 </div>
+
+                <!-- Home Link (Desktop only) -->
+                <a href="index.php" class="hidden md:inline-flex items-center gap-2 text-sm text-slate-600 hover:text-blue-600 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    <span>กลับหน้าหลัก</span>
+                </a>
             </header>
 
             <!-- Page Content -->
-            <main class="flex-1 overflow-y-auto bg-slate-50 p-6">
+            <main class="flex-1 overflow-y-auto bg-slate-50 p-4 md:p-6">
                 <?php
                 // Load the specific admin page content
                 $admin_file = "src/Admin/$action.php";
@@ -222,12 +252,12 @@
         const sidebarOverlay = document.getElementById('sidebarOverlay');
 
         sidebarToggle?.addEventListener('click', () => {
-            sidebar.classList.toggle('closed');
+            sidebar.classList.toggle('open');
             sidebarOverlay.classList.toggle('hidden');
         });
 
         sidebarOverlay?.addEventListener('click', () => {
-            sidebar.classList.add('closed');
+            sidebar.classList.remove('open');
             sidebarOverlay.classList.add('hidden');
         });
     </script>
